@@ -77,12 +77,15 @@
 
   <script>
     const apiKey = "208bf4b665c24b08a1719225f94220a4";
-    const apiUrl = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${apiKey}`;
+    const baseUrl = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${apiKey}`;
+    
+    // Tambahkan proxy agar bisa diakses dari browser (bypass CORS)
+    const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(baseUrl);
 
     const container = document.getElementById("newsContainer");
     let allArticles = [];
 
-    // Fungsi untuk menampilkan artikel berita
+    // Fungsi menampilkan berita
     function displayArticles(list) {
       container.innerHTML = "";
       if (list.length === 0) {
@@ -109,12 +112,14 @@
       });
     }
 
-    // Ambil berita dari API menggunakan fetch
-    fetch(apiUrl)
+    // Ambil berita menggunakan proxy (untuk menghindari error CORS di Vercel)
+    fetch(proxyUrl)
       .then((response) => response.json())
       .then((data) => {
-        if (data.articles) {
-          allArticles = data.articles;
+        // Data dari AllOrigins disimpan dalam properti "contents"
+        const parsedData = JSON.parse(data.contents);
+        if (parsedData.articles) {
+          allArticles = parsedData.articles;
           displayArticles(allArticles);
         } else {
           container.innerHTML = `<p class="text-center text-danger">No articles found.</p>`;
